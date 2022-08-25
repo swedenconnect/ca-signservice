@@ -48,13 +48,13 @@ import java.util.*;
  * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
-public class HighVolumeCARepository implements CARepository, CRLRevocationDataProvider {
+public class StorageOnlyCARepository implements CARepository, CRLRevocationDataProvider {
 
   private final CARepoStorage storage;
   private final File crlFile;
   private BigInteger crlNumber;
 
-  public HighVolumeCARepository(CARepoStorage storage, File crlFile) throws IOException {
+  public StorageOnlyCARepository(CARepoStorage storage, File crlFile) throws IOException {
     this.storage = storage;
     this.crlFile = crlFile;
 
@@ -167,10 +167,6 @@ public class HighVolumeCARepository implements CARepository, CRLRevocationDataPr
 
   private void internalRevokeCertificate(final @Nonnull BigInteger serialNumber, final int reason, final @Nullable Date revocationTime) throws CertificateRevocationException {
     Objects.requireNonNull(serialNumber, "Serial number must not be null");
-    CertificateRecord certificateRecord = getCertificate(serialNumber);
-    if (certificateRecord == null) {
-      throw new CertificateRevocationException("No such certificate (" + serialNumber.toString(16) + ")");
-    }
     RevokedCertificate revokedCertificate = new RevokedCertificate(serialNumber, revocationTime, reason);
     storage.revokeCertificate(revokedCertificate);
   }

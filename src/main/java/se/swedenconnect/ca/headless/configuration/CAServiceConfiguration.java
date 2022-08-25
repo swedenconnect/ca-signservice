@@ -18,27 +18,30 @@ package se.swedenconnect.ca.headless.configuration;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import se.swedenconnect.ca.headless.ca.HighVolumeCARepository;
-import se.swedenconnect.ca.headless.ca.HeadlessCAServices;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
+import se.swedenconnect.ca.headless.ca.SignServiceCAInstances;
+import se.swedenconnect.ca.headless.ca.StorageOnlyCARepository;
 import se.swedenconnect.ca.headless.ca.storage.CARepoStorage;
+import se.swedenconnect.ca.headless.ca.storage.StorageEncryption;
 import se.swedenconnect.ca.headless.ca.storage.impl.DefaultCARepoStorage;
+import se.swedenconnect.ca.headless.ca.storage.impl.DefaultStorageEncryption;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.opensaml.pkcs11.PKCS11Provider;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,6 +60,7 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
 
   /**
    * The CA services bean provide all CA services as defined by the configuration of each instance
+   *
    * @param instanceConfiguration instance configuration properties
    * @param pkcs11Provider the pkcs11 provider if such provider is configured (or null)
    * @param basicServiceConfig basic service configuration data
@@ -68,8 +72,8 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
    */
   @Bean CAServices caServices(InstanceConfiguration instanceConfiguration, PKCS11Provider pkcs11Provider,
     BasicServiceConfig basicServiceConfig, Map<String, CARepository> caRepositoryMap
-    ) throws IOException, CMSException, CertificateException {
-    CAServices caServices = new HeadlessCAServices(instanceConfiguration, pkcs11Provider, basicServiceConfig,
+  ) throws IOException, CMSException, CertificateException {
+    CAServices caServices = new SignServiceCAInstances(instanceConfiguration, pkcs11Provider, basicServiceConfig,
       caRepositoryMap, applicationEventPublisher);
     return caServices;
   }
@@ -80,27 +84,88 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
 
   /**
    * Provides CA repository implementations for each instance
+   *
    * @param basicServiceConfig basic service configuration
    * @param instanceConfiguration configuration properties for each instance
    * @return map of {@link CARepository} for each instance
    * @throws IOException error parsing data
    */
   @DependsOn("BasicServiceConfig")
-  @Bean Map<String, CARepository> fileCaRepositoryMap (
+  @Bean Map<String, CARepository> fileCaRepositoryMap(
     BasicServiceConfig basicServiceConfig,
-    InstanceConfiguration instanceConfiguration
+    InstanceConfiguration instanceConfiguration,
+    StorageCryptoConfiguration cryptoConfiguration
   ) throws IOException {
     Map<String, CAConfigData> instanceConfigMap = instanceConfiguration.getInstanceConfigMap();
     Set<String> instances = instanceConfigMap.keySet();
     Map<String, CARepository> caRepositoryMap = new HashMap<>();
-    for (String instance: instances) {
-      File repositoryDir = new File(basicServiceConfig.getDataStoreLocation(), "instances/"+instance+"/repository");
+    for (String instance : instances) {
+      CAConfigData caConfigData = instanceConfigMap.get(instance);
+      String customCertStorageLocation = caConfigData.getCa().getCustomCertStorageLocation();
+      File repositoryDir = new File(basicServiceConfig.getDataStoreLocation(), "instances/" + instance + "/repository");
+      File certStorageDir = customCertStorageLocation == null
+        ? new File(repositoryDir, "certStorage")
+        : new File(customCertStorageLocation);
+      if (!certStorageDir.exists()){
+        certStorageDir.mkdirs();
+      }
       File crlFile = new File(repositoryDir, instance + ".crl");
-      CARepoStorage storage = new DefaultCARepoStorage(repositoryDir, null);
-      CARepository caRepository= new HighVolumeCARepository(storage, crlFile);
+      StorageEncryption encryption = getStorageEncryption(cryptoConfiguration, instance);
+      CARepoStorage storage = new DefaultCARepoStorage(certStorageDir, encryption);
+      CARepository caRepository = new StorageOnlyCARepository(storage, crlFile);
       caRepositoryMap.put(instance, caRepository);
     }
     return caRepositoryMap;
   }
 
+  private StorageEncryption getStorageEncryption(final @Nonnull StorageCryptoConfiguration cryptoConfiguration,
+    String instance) {
+    log.info("Setting up storage encryption for instance {}", instance);
+    Map<String, StorageCryptoConfiguration.InstanceStorageCryptoConfig> instanceCrypto = cryptoConfiguration.getStorageCrypto();
+    if (instanceCrypto == null || !instanceCrypto.containsKey(instance)) {
+      log.info("No crypto configuration found. Storage encryption disabled");
+      return null;
+    }
+    StorageCryptoConfiguration.InstanceStorageCryptoConfig instanceCryptoConfig = instanceCrypto.get(instance);
+    if (!instanceCryptoConfig.getEnabled()) {
+      log.info("Storage encryption disabled by configuration");
+      return null;
+    }
+
+    boolean hasKeyLen = instanceCryptoConfig.getKeyLength() != null;
+    boolean hasIterations = instanceCryptoConfig.getIterations() != null;
+
+    if (hasKeyLen && hasIterations) {
+      log.info("Setting up encryption with custom key size={} and custom iterations={}",
+        instanceCryptoConfig.getKeyLength(), instanceCryptoConfig.getIterations());
+      return new DefaultStorageEncryption(
+        instanceCryptoConfig.getKey().toCharArray(),
+        instanceCryptoConfig.getKid(),
+        Base64.decode(instanceCryptoConfig.getSalt()),
+        instanceCryptoConfig.getKeyLength(),
+        instanceCryptoConfig.getIterations());
+    }
+    if (hasKeyLen) {
+      log.info("Setting up encryption with custom key size={}", instanceCryptoConfig.getKeyLength());
+      return new DefaultStorageEncryption(
+        instanceCryptoConfig.getKey().toCharArray(),
+        instanceCryptoConfig.getKid(),
+        Base64.decode(instanceCryptoConfig.getSalt()),
+        instanceCryptoConfig.getKeyLength());
+    }
+    if (hasIterations) {
+      log.info("Setting up encryption with custom iterations={}", instanceCryptoConfig.getIterations());
+      return new DefaultStorageEncryption(
+        instanceCryptoConfig.getKey().toCharArray(),
+        instanceCryptoConfig.getKid(),
+        Base64.decode(instanceCryptoConfig.getSalt()),
+        128,
+        instanceCryptoConfig.getIterations());
+    }
+    log.info("Setting up encryption with default key size and interations");
+    return new DefaultStorageEncryption(
+      instanceCryptoConfig.getKey().toCharArray(),
+      instanceCryptoConfig.getKid(),
+      Base64.decode(instanceCryptoConfig.getSalt()));
+  }
 }

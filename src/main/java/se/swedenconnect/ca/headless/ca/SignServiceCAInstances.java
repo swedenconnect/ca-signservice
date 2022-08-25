@@ -60,8 +60,8 @@ import java.util.Map;
  * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
-public class HeadlessCAServices extends AbstractDefaultCAServices {
-  public HeadlessCAServices(InstanceConfiguration instanceConfiguration,
+public class SignServiceCAInstances extends AbstractDefaultCAServices {
+  public SignServiceCAInstances(InstanceConfiguration instanceConfiguration,
     PKCS11Provider pkcs11Provider, BasicServiceConfig basicServiceConfig,
     Map<String, CARepository> caRepositoryMap, ApplicationEventPublisher applicationEventPublisher)
     throws CertificateException, IOException, CMSException {
@@ -75,7 +75,7 @@ public class HeadlessCAServices extends AbstractDefaultCAServices {
     throws NoSuchAlgorithmException, CertificateRevocationException {
 
     log.info("Creating a signature validation trust CA for instance {}", instance);
-    return new HeadlessCAService(privateKey, caChain, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
+    return new SignServiceCA(privateKey, caChain, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
 
   /** {@inheritDoc} */

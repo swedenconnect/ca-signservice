@@ -25,13 +25,16 @@ import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
 import se.swedenconnect.ca.engine.ca.models.cert.CertNameModel;
 import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
+import se.swedenconnect.ca.engine.ca.repository.CertificateRecord;
 import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
 
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,11 +44,11 @@ import java.util.List;
  * @author Stefan Santesson (stefan@idsec.se)
  */
 @Slf4j
-public class HeadlessCAService extends AbstractBasicCA {
+public class SignServiceCA extends AbstractBasicCA {
 
   @Getter private List<X509CertificateHolder> caCertificateChain;
 
-  public HeadlessCAService(PrivateKey privateKey, List<X509CertificateHolder> caCertificateChain,
+  public SignServiceCA(PrivateKey privateKey, List<X509CertificateHolder> caCertificateChain,
     CARepository caRepository, CertificateIssuerModel certIssuerModel,
     CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
     throws NoSuchAlgorithmException, CertificateRevocationException {
@@ -65,4 +68,13 @@ public class HeadlessCAService extends AbstractBasicCA {
       .ocspServiceUrl(StringUtils.isBlank(ocspResponderUrl) ? null : ocspResponderUrl);
     return certModelBuilder;
   }
+
+  @Override
+  public void revokeCertificate(BigInteger serialNumber, int reason, Date revocationDate) throws CertificateRevocationException {
+    if (revocationDate == null || revocationDate.after(new Date())) {
+      revocationDate = new Date();
+    }
+    getCaRepository().revokeCertificate(serialNumber, reason, revocationDate);
+  }
+
 }

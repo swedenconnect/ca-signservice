@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -273,7 +274,7 @@ public class DefaultCARepoStorage implements CARepoStorage {
       recordBuilder.eCert(Base64.toBase64String(encryption.encryptData(certBytes, true)));
     }
     else {
-      recordBuilder.id(idString);
+      recordBuilder.id(URLEncoder.encode(idString, StandardCharsets.UTF_8));
       recordBuilder.cert(Base64.toBase64String(certBytes));
     }
 
