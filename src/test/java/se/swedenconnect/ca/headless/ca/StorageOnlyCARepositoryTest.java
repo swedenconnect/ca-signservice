@@ -47,7 +47,9 @@ class StorageOnlyCARepositoryTest {
     File repoDir = createDir("repo-1");
     File crlFile = new File(repoDir, "crl");
 
-    StorageOnlyCARepository caRepository = new StorageOnlyCARepository(new DefaultCARepoStorage(repoDir, new DefaultStorageEncryption(
+    StorageOnlyCARepository caRepository = new StorageOnlyCARepository(new DefaultCARepoStorage(repoDir,
+      new File(repoDir, "revoked.json"),
+      new DefaultStorageEncryption(
       "s3cr3t".toCharArray(), "01", "salt".getBytes()
     )), crlFile);
 

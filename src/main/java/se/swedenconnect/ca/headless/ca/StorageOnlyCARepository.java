@@ -132,12 +132,8 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
   /** {@inheritDoc} */
   @Override public void addCertificate(final @Nonnull X509CertificateHolder certificate) throws IOException {
     try {
-      internalRepositoryUpdate(UpdateType.addCert, new Object[]{certificate});
-    }
-    catch (IOException e) {
-      throw e instanceof IOException
-        ? (IOException) e
-        : new IOException(e);
+      Objects.requireNonNull(certificate, "Certificate must no be null");
+      storage.storeCertificate(certificate.getEncoded());
     }
     catch (CertificateStorageException e) {
       // This is a critical error that should require the system to stop
@@ -147,25 +143,8 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
     }
   }
 
-  private void internalAddCertificate(final @Nonnull X509CertificateHolder certificate)
-    throws IOException, CertificateStorageException {
-    Objects.requireNonNull(certificate, "Certificate must no be null");
-    storage.storeCertificate(certificate.getEncoded());
-  }
-
   /** {@inheritDoc} */
   @Override public void revokeCertificate(final @Nonnull BigInteger serialNumber, final int reason, final @Nullable Date revocationTime) throws CertificateRevocationException {
-    try {
-      internalRepositoryUpdate(UpdateType.revokeCert, new Object[]{serialNumber, reason, revocationTime});
-    }
-    catch (Exception e) {
-      throw e instanceof CertificateRevocationException
-        ? (CertificateRevocationException) e
-        : new CertificateRevocationException(e);
-    }
-  }
-
-  private void internalRevokeCertificate(final @Nonnull BigInteger serialNumber, final int reason, final @Nullable Date revocationTime) throws CertificateRevocationException {
     Objects.requireNonNull(serialNumber, "Serial number must not be null");
     RevokedCertificate revokedCertificate = new RevokedCertificate(serialNumber, revocationTime, reason);
     storage.revokeCertificate(revokedCertificate);
@@ -177,29 +156,8 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
     return Collections.emptyList();
   }
 
-  /**
-   * All requests to modify the CA repository must go through this function to ensure that all updates are thread safe
-   * @param updateType type of repository update
-   * @param args input arguments to the update request
-   * @throws Exception On errors performing the update request
-   */
-  private synchronized void internalRepositoryUpdate(UpdateType updateType, Object[] args)
-    throws IOException, CertificateStorageException {
-    switch (updateType){
-    case addCert:
-      internalAddCertificate((X509CertificateHolder) args[0]);
-      return;
-    case revokeCert:
-      internalRevokeCertificate((BigInteger) args[0], (int) args[1], (Date) args[2]);
-      return;
-    }
-    throw new IOException("Unsupported action");
-  }
-
   public enum UpdateType {
     addCert, revokeCert
   }
-
-
 
 }

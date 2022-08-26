@@ -106,14 +106,16 @@ public class DefaultCARepoStorage implements CARepoStorage {
    * @param encryption optional encrypter for encrypting data
    * @throws IOException error instantiating this storage service
    */
-  public DefaultCARepoStorage(final @Nonnull File storageDirectory, final @Nullable StorageEncryption encryption)
+  public DefaultCARepoStorage(final @Nonnull File storageDirectory, final @Nonnull File revocationFile, final @Nullable StorageEncryption encryption)
     throws IOException {
     this.encryption = encryption;
     this.storageDirectory = storageDirectory;
     if (!storageDirectory.exists()) {
       throw new IOException("Storage directory " + storageDirectory.getAbsolutePath() + " does not exist");
     }
-    this.revocationFile = new File(storageDirectory, "revoked.json");
+    log.info("Initiated certificate storage at: {}", storageDirectory);
+    this.revocationFile = revocationFile;
+    log.info("Revocation info file: {}", revocationFile);
     log.info("Initiated storage with {} revoked certificates", getRevocationData().size());
   }
 
@@ -170,7 +172,7 @@ public class DefaultCARepoStorage implements CARepoStorage {
     for (RevocationRecord record : revocationData) {
       if (record.getSerial().equalsIgnoreCase(revokedCertificate.getCertificateSerialNumber().toString(16))) {
         if (record.getReason() == CRLReason.certificateHold) {
-          if (revokedCertificate.getReason() < 0) {
+          if (revokedCertificate.getReason() == CRLReason.removeFromCRL) {
             // remove this certificate from certificateHold status
             log.debug("Removing certificate from certificateHold");
             deleteList.add(record.getSerial());
@@ -183,7 +185,7 @@ public class DefaultCARepoStorage implements CARepoStorage {
           break;
         }
         else {
-          if (revokedCertificate.getReason() < 0) {
+          if (revokedCertificate.getReason() < CRLReason.removeFromCRL) {
             log.debug("Revocation removal request denied since certificate has already been permanently revoked");
             throw new CertificateRevocationException(
               "Certificate is already revoked with reason other than certificate hold");
@@ -206,6 +208,9 @@ public class DefaultCARepoStorage implements CARepoStorage {
       // No existing revocation record was modified. Add a new record.
       if (revokedCertificate.getReason() < 0) {
         throw new CertificateRevocationException("Revocation of new certificate must hav a non negative reason code");
+      }
+      if (revokedCertificate.getReason() == CRLReason.removeFromCRL) {
+        throw new CertificateRevocationException("Removal request for a certificate that has not been revoked");
       }
       RevocationRecord newRevokedRecord = RevocationRecord.builder()
         .serial(revokedCertificate.getCertificateSerialNumber().toString(16))

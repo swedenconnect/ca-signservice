@@ -47,6 +47,8 @@ public class DefaultStorageEncryption implements StorageEncryption {
     private int iterations;
     private int keylength;
 
+    private SecretKey encryptionKey;
+
     /**
      * Constructor specifying all parameters
      *
@@ -56,12 +58,15 @@ public class DefaultStorageEncryption implements StorageEncryption {
      * @param keylength key length
      * @param iterations the number of times that the password is hashed during the derivation of the symmetric key
      */
-    public DefaultStorageEncryption(char[] password, String kid, byte[] salt, int keylength, int iterations) {
+    public DefaultStorageEncryption(char[] password, String kid, byte[] salt, int keylength, int iterations)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
         this.password = password;
         this.kid = kid;
         this.salt = salt;
         this.iterations = iterations;
         this.keylength = keylength;
+
+        this.encryptionKey = getKey();
     }
 
     /**
@@ -71,7 +76,8 @@ public class DefaultStorageEncryption implements StorageEncryption {
      * @param kid key identifier used to identify the specified password key
      * @param salt salt
      */
-    public DefaultStorageEncryption(char[] password, String kid, byte[] salt) {
+    public DefaultStorageEncryption(char[] password, String kid, byte[] salt)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
         this(password, kid, salt, 128, 65536);
     }
 
@@ -83,7 +89,8 @@ public class DefaultStorageEncryption implements StorageEncryption {
      * @param salt salt
      * @param keylength key length
      */
-    public DefaultStorageEncryption(char[] password, String kid, byte[] salt, int keylength) {
+    public DefaultStorageEncryption(char[] password, String kid, byte[] salt, int keylength)
+      throws NoSuchAlgorithmException, InvalidKeySpecException {
         this(password, kid, salt, keylength, 65536);
     }
 
@@ -135,7 +142,7 @@ public class DefaultStorageEncryption implements StorageEncryption {
       InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException,
       JsonProcessingException {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, getKey());
+        cipher.init(Cipher.ENCRYPT_MODE, encryptionKey);
         AlgorithmParameters params = cipher.getParameters();
         byte[] iv = params.getParameterSpec(IvParameterSpec.class).getIV();
         byte[] ciphertext = cipher.doFinal(toBeEncrypted);
@@ -161,6 +168,11 @@ public class DefaultStorageEncryption implements StorageEncryption {
         char[] encPassword;
         if (keyId == null || keyId.equalsIgnoreCase(kid)) {
             log.debug("Decrypting with default key: {}", kid);
+            if (encryptionKey != null) {
+                // We have a default key. Use it
+                return encryptionKey;
+            }
+            // No key has been generated. Generate it.
             encPassword = password;
         } else {
             if (keyMap == null || !keyMap.containsKey(keyId)) {

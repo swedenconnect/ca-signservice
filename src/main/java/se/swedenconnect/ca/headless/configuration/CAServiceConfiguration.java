@@ -40,7 +40,9 @@ import se.swedenconnect.opensaml.pkcs11.PKCS11Provider;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -95,7 +97,7 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
     BasicServiceConfig basicServiceConfig,
     InstanceConfiguration instanceConfiguration,
     StorageCryptoConfiguration cryptoConfiguration
-  ) throws IOException {
+  ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     Map<String, CAConfigData> instanceConfigMap = instanceConfiguration.getInstanceConfigMap();
     Set<String> instances = instanceConfigMap.keySet();
     Map<String, CARepository> caRepositoryMap = new HashMap<>();
@@ -106,12 +108,13 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
       File certStorageDir = customCertStorageLocation == null
         ? new File(repositoryDir, "certStorage")
         : new File(customCertStorageLocation);
-      if (!certStorageDir.exists()){
+      if (customCertStorageLocation == null && !certStorageDir.exists()){
+        // If storage is not specified by custom settings, then create the storage dir in the instance folder.
         certStorageDir.mkdirs();
       }
       File crlFile = new File(repositoryDir, instance + ".crl");
       StorageEncryption encryption = getStorageEncryption(cryptoConfiguration, instance);
-      CARepoStorage storage = new DefaultCARepoStorage(certStorageDir, encryption);
+      CARepoStorage storage = new DefaultCARepoStorage(certStorageDir, new File(repositoryDir, "revoked.json"), encryption);
       CARepository caRepository = new StorageOnlyCARepository(storage, crlFile);
       caRepositoryMap.put(instance, caRepository);
     }
@@ -119,7 +122,7 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
   }
 
   private StorageEncryption getStorageEncryption(final @Nonnull StorageCryptoConfiguration cryptoConfiguration,
-    String instance) {
+    String instance) throws NoSuchAlgorithmException, InvalidKeySpecException {
     log.info("Setting up storage encryption for instance {}", instance);
     Map<String, StorageCryptoConfiguration.InstanceStorageCryptoConfig> instanceCrypto = cryptoConfiguration.getStorageCrypto();
     if (instanceCrypto == null || !instanceCrypto.containsKey(instance)) {

@@ -64,8 +64,12 @@ class DefaultCARepoStorageTest {
   @Test
   void storeCertificate() throws Exception {
 
-    CARepoStorage storageNoCrypt = new DefaultCARepoStorage(createDir("noCrypt"), null);
-    CARepoStorage storageCrypt = new DefaultCARepoStorage(createDir("crypt"), encrypt1);
+    CARepoStorage storageNoCrypt = new DefaultCARepoStorage(createDir("noCrypt"),
+      new File(new File(storageDataDir, "noCrypt"), "revoked.json")
+      , null);
+    CARepoStorage storageCrypt = new DefaultCARepoStorage(createDir("crypt"),
+      new File(new File(storageDataDir, "crypt"), "revoked.json")
+      ,encrypt1);
 
     // Store certs
     storeCert("Storing cert 1 - no encryption", storageNoCrypt, TestData.CERT_1, null);
@@ -79,8 +83,12 @@ class DefaultCARepoStorageTest {
     revokeCert("Revoking cert 2 - crypt", storageCrypt, getSerial(TestData.CERT_2), new Date(), CRLReason.certificateHold, null);
 
     // instantiate over existing storage dir
-    storageNoCrypt = new DefaultCARepoStorage(new File(storageDataDir, "noCrypt"), null);
-    storageCrypt = new DefaultCARepoStorage(new File(storageDataDir, "crypt"), encrypt2);
+    storageNoCrypt = new DefaultCARepoStorage(new File(storageDataDir, "noCrypt"),
+      new File(new File(storageDataDir, "noCrypt"), "revoked.json")
+      ,null);
+    storageCrypt = new DefaultCARepoStorage(new File(storageDataDir, "crypt"),
+      new File(new File(storageDataDir, "crypt"), "revoked.json")
+      , encrypt2);
 
     List<RevokedCertificate> revokedCertificatesNoCrypt = storageNoCrypt.getRevokedCertificates();
     assertEquals(2, revokedCertificatesNoCrypt.size());
@@ -89,9 +97,9 @@ class DefaultCARepoStorageTest {
 
     // Revoke already revoked
     // Removing from certificateHold should work
-    revokeCert("Un-revoking cert 2 - crypt", storageCrypt, getSerial(TestData.CERT_2), new Date(), -1, null);
+    revokeCert("Un-revoking cert 2 - crypt", storageCrypt, getSerial(TestData.CERT_2), new Date(), CRLReason.removeFromCRL, null);
     // Revoking it again with negative reason code should not work
-    revokeCert("Revoking cert 2 again with removal request - crypt", storageCrypt, getSerial(TestData.CERT_2), new Date(), -1, CertificateRevocationException.class);
+    revokeCert("Revoking cert 2 again with removal request - crypt", storageCrypt, getSerial(TestData.CERT_2), new Date(), CRLReason.removeFromCRL, CertificateRevocationException.class);
     // Revoking it again with certificateHold reason should work
     revokeCert("Revoking cert 2 again with certificate Hold - crypt", storageCrypt, getSerial(TestData.CERT_2), new Date(), CRLReason.certificateHold, null);
     // Upgrading on hold should work
@@ -147,7 +155,10 @@ class DefaultCARepoStorageTest {
 
     // Finally force a storage failure by deleting the storage dir
     FileUtils.copyDirectory(new File(storageDataDir, "noCrypt"), new File(storageDataDir, "error"));
-    DefaultCARepoStorage errorStorage = new DefaultCARepoStorage(new File(storageDataDir, "error"), null);
+    DefaultCARepoStorage errorStorage = new DefaultCARepoStorage(
+      new File(storageDataDir, "error"),
+      new File(new File(storageDataDir, "error"), "revoked.json")
+      , null);
     assertFalse(errorStorage.isCriticalStorageError());
     FileUtils.forceDelete(new File(storageDataDir, "error"));
     // With storage dir removed, we should get a critical error
