@@ -1,6 +1,6 @@
 FROM openjdk:11-jre
 
-ADD target/headless-ca-1.1.6-SNAPSHOT.jar /app.jar
+ADD target/signservice-ca-1.0.0-SNAPSHOT.jar /app.jar
 
 # This ENTRYPOINT enables attachement of a debugger on port 8000. This port is automtically exposed on the docker container.
 ENTRYPOINT ["java","-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000","-jar","/app.jar"]
