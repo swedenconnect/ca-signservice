@@ -34,17 +34,20 @@ import se.swedenconnect.ca.engine.ca.models.cert.impl.SelfIssuedCertificateModel
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
+import se.swedenconnect.ca.engine.utils.CAUtils;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
 import se.swedenconnect.ca.service.base.configuration.instance.impl.AbstractDefaultCAServices;
-import se.swedenconnect.ca.service.base.configuration.keys.LocalKeySource;
+import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
-import se.swedenconnect.opensaml.pkcs11.PKCS11Provider;
+import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
+import se.swedenconnect.security.credential.PkiCredential;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.Map;
@@ -62,20 +65,20 @@ import java.util.Map;
 @Slf4j
 public class SignServiceCAInstances extends AbstractDefaultCAServices {
   public SignServiceCAInstances(InstanceConfiguration instanceConfiguration,
-    PKCS11Provider pkcs11Provider, BasicServiceConfig basicServiceConfig,
+    PkiCredentialFactory pkiCredentialFactory, BasicServiceConfig basicServiceConfig,
     Map<String, CARepository> caRepositoryMap, ApplicationEventPublisher applicationEventPublisher)
     throws CertificateException, IOException, CMSException {
-    super(instanceConfiguration, pkcs11Provider, basicServiceConfig, caRepositoryMap, applicationEventPublisher);
+    super(instanceConfiguration, pkiCredentialFactory, basicServiceConfig, caRepositoryMap, applicationEventPublisher);
 
   }
 
   /** {@inheritDoc} */
-  @Override protected AbstractBasicCA getBasicCaService(String instance, String type, PrivateKey privateKey, List<X509CertificateHolder> caChain,
+  @Override protected AbstractBasicCA getBasicCaService(String instance, String type, PkiCredential issuerCredential,
     CARepository caRepository, CertificateIssuerModel certIssuerModel, CRLIssuerModel crlIssuerModel, List<String> crlDistributionPoints)
-    throws NoSuchAlgorithmException, CertificateRevocationException {
+    throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
 
     log.info("Creating a signature validation trust CA for instance {}", instance);
-    return new SignServiceCA(privateKey, caChain, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
+    return new SignServiceCA(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
   }
 
   /** {@inheritDoc} */
@@ -84,7 +87,7 @@ public class SignServiceCAInstances extends AbstractDefaultCAServices {
   }
 
   /** {@inheritDoc} */
-  @Override protected X509CertificateHolder generateSelfIssuedCaCert(LocalKeySource caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
+  @Override protected X509CertificateHolder generateSelfIssuedCaCert(PkiCredential caKeySource, CAConfigData caConfigData, String instance, String baseUrl)
     throws NoSuchAlgorithmException, CertificateIssuanceException {
     // We implement our own Self issued profile in order to add the SubjectInfoAccess URL to self issued certificates
     CAConfigData.CaConfig caConfig = caConfigData.getCa();
@@ -95,11 +98,11 @@ public class SignServiceCAInstances extends AbstractDefaultCAServices {
 
     CertificateIssuerModel certificateIssuerModel = new CertificateIssuerModel(
       caConfig.getAlgorithm(),
-      caConfig.getSelfIssuedValidYears()
+      GeneralCAUtils.getDurationFromTypeAndValue(CAConfigData.ValidityUnit.Y, caConfig.getSelfIssuedValidYears())
     );
     CertificateIssuer issuer = new SelfIssuedCertificateIssuer(certificateIssuerModel);
     CertificateModel certModel = SelfIssuedCertificateModelBuilder.getInstance(
-        caKeySource.getCredential().getPrivateKey(),
+        caKeySource.getPrivateKey(),
         caKeySource.getCertificate().getPublicKey(),
         certificateIssuerModel)
       .subject(getSubjectNameModel(caConfig.getName()))

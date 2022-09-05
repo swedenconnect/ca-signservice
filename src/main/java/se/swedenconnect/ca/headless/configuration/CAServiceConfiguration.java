@@ -34,8 +34,8 @@ import se.swedenconnect.ca.headless.ca.storage.impl.DefaultStorageEncryption;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
+import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
-import se.swedenconnect.opensaml.pkcs11.PKCS11Provider;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -64,7 +64,7 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
    * The CA services bean provide all CA services as defined by the configuration of each instance
    *
    * @param instanceConfiguration instance configuration properties
-   * @param pkcs11Provider the pkcs11 provider if such provider is configured (or null)
+   * @param pkiCredentialFactory the pkcs11 provider if such provider is configured (or null)
    * @param basicServiceConfig basic service configuration data
    * @param caRepositoryMap CA repositories for each instance
    * @return {@link CAServices}
@@ -72,10 +72,10 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
    * @throws CMSException error handling CMS data
    * @throws CertificateException error parsing certificate data
    */
-  @Bean CAServices caServices(InstanceConfiguration instanceConfiguration, PKCS11Provider pkcs11Provider,
+  @Bean CAServices caServices(InstanceConfiguration instanceConfiguration, PkiCredentialFactory pkiCredentialFactory,
     BasicServiceConfig basicServiceConfig, Map<String, CARepository> caRepositoryMap
   ) throws IOException, CMSException, CertificateException {
-    CAServices caServices = new SignServiceCAInstances(instanceConfiguration, pkcs11Provider, basicServiceConfig,
+    CAServices caServices = new SignServiceCAInstances(instanceConfiguration, pkiCredentialFactory, basicServiceConfig,
       caRepositoryMap, applicationEventPublisher);
     return caServices;
   }
