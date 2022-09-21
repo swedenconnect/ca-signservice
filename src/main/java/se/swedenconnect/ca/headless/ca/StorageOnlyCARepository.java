@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021. Agency for Digital Government (DIGG)
+ * Copyright (c) 2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.headless.ca;
 
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
+
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.ca.repository.CertificateRecord;
 import se.swedenconnect.ca.engine.ca.repository.SortBy;
@@ -32,20 +44,9 @@ import se.swedenconnect.ca.engine.revocation.crl.RevokedCertificate;
 import se.swedenconnect.ca.headless.ca.storage.CARepoStorage;
 import se.swedenconnect.ca.headless.ca.storage.CertificateStorageException;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.*;
-
 /**
- * CA repository for high volume setups where no access to previously issued certificates is provided through
- * this API. Access to issued certificates must be handled by direct access to the repository data
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * CA repository for high volume setups where no access to previously issued certificates is provided through this API.
+ * Access to issued certificates must be handled by direct access to the repository data
  */
 @Slf4j
 public class StorageOnlyCARepository implements CARepository, CRLRevocationDataProvider {
@@ -54,7 +55,7 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
   private final File crlFile;
   private BigInteger crlNumber;
 
-  public StorageOnlyCARepository(CARepoStorage storage, File crlFile) throws IOException {
+  public StorageOnlyCARepository(final CARepoStorage storage, final File crlFile) throws IOException {
     this.storage = storage;
     this.crlFile = crlFile;
 
@@ -64,61 +65,72 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
       log.info("Starting new CRL sequence with CRL number 0");
     }
     else {
-      crlNumber = getCRLNumberFromCRL();
-      log.info("CRL number counter initialized with CRL number {}", crlNumber.toString());
+      this.crlNumber = this.getCRLNumberFromCRL();
+      log.info("CRL number counter initialized with CRL number {}", this.crlNumber.toString());
     }
   }
 
   private BigInteger getCRLNumberFromCRL() throws IOException {
-    X509CRLHolder crlHolder = new X509CRLHolder(new FileInputStream(crlFile));
-    Extension crlNumberExtension = crlHolder.getExtension(Extension.cRLNumber);
-    CRLNumber crlNumberFromCrl = CRLNumber.getInstance(crlNumberExtension.getParsedValue());
+    final X509CRLHolder crlHolder = new X509CRLHolder(new FileInputStream(this.crlFile));
+    final Extension crlNumberExtension = crlHolder.getExtension(Extension.cRLNumber);
+    final CRLNumber crlNumberFromCrl = CRLNumber.getInstance(crlNumberExtension.getParsedValue());
     return crlNumberFromCrl.getCRLNumber();
   }
 
   /** {@inheritDoc} */
-  @Override public List<BigInteger> getAllCertificates() {
+  @Override
+  public List<BigInteger> getAllCertificates() {
     return Collections.emptyList();
   }
 
   /** {@inheritDoc} */
-  @Override public CertificateRecord getCertificate(BigInteger bigInteger) {
+  @Override
+  public CertificateRecord getCertificate(final BigInteger bigInteger) {
     return null;
   }
 
   /** {@inheritDoc} */
-  @Override public CRLRevocationDataProvider getCRLRevocationDataProvider() {
+  @Override
+  public CRLRevocationDataProvider getCRLRevocationDataProvider() {
     return this;
   }
 
   /** {@inheritDoc} */
-  @Override public int getCertificateCount(boolean notRevoked) {
+  @Override
+  public int getCertificateCount(final boolean notRevoked) {
     return 0;
   }
 
   /** {@inheritDoc} */
-  @Override public List<CertificateRecord> getCertificateRange(int page, int pageSize, boolean notRevoked, SortBy sortBy, boolean descending) {
+  @Override
+  public List<CertificateRecord> getCertificateRange(final int page, final int pageSize, final boolean notRevoked,
+      final SortBy sortBy, final boolean descending) {
     return Collections.emptyList();
   }
 
-  @Override public List<RevokedCertificate> getRevokedCertificates() {
-    return storage.getRevokedCertificates();
+  @Override
+  public List<RevokedCertificate> getRevokedCertificates() {
+    return this.storage.getRevokedCertificates();
   }
 
-  @Override public BigInteger getNextCrlNumber() {
-    crlNumber = crlNumber.add(BigInteger.ONE);
-    return crlNumber;
+  @Override
+  public BigInteger getNextCrlNumber() {
+    this.crlNumber = this.crlNumber.add(BigInteger.ONE);
+    return this.crlNumber;
   }
 
-  @SneakyThrows @Override public void publishNewCrl(X509CRLHolder crl) {
-    FileUtils.writeByteArrayToFile(crlFile, crl.getEncoded());
+  @SneakyThrows
+  @Override
+  public void publishNewCrl(final X509CRLHolder crl) {
+    FileUtils.writeByteArrayToFile(this.crlFile, crl.getEncoded());
   }
 
-  @Override public X509CRLHolder getCurrentCrl() {
+  @Override
+  public X509CRLHolder getCurrentCrl() {
     try {
-      return new X509CRLHolder(new FileInputStream(crlFile));
+      return new X509CRLHolder(new FileInputStream(this.crlFile));
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       log.debug("No current CRL is available. Returning null");
       return null;
     }
@@ -128,14 +140,14 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
    * From this point we only deal with functions that updates the repository
    */
 
-
   /** {@inheritDoc} */
-  @Override public void addCertificate(final @Nonnull X509CertificateHolder certificate) throws IOException {
+  @Override
+  public void addCertificate(final @Nonnull X509CertificateHolder certificate) throws IOException {
     try {
       Objects.requireNonNull(certificate, "Certificate must no be null");
-      storage.storeCertificate(certificate.getEncoded());
+      this.storage.storeCertificate(certificate.getEncoded());
     }
-    catch (CertificateStorageException e) {
+    catch (final CertificateStorageException e) {
       // This is a critical error that should require the system to stop
       e.printStackTrace();
       // Throw an unchecked runtime exception
@@ -144,14 +156,17 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
   }
 
   /** {@inheritDoc} */
-  @Override public void revokeCertificate(final @Nonnull BigInteger serialNumber, final int reason, final @Nullable Date revocationTime) throws CertificateRevocationException {
+  @Override
+  public void revokeCertificate(final @Nonnull BigInteger serialNumber, final int reason,
+      final @Nullable Date revocationTime) throws CertificateRevocationException {
     Objects.requireNonNull(serialNumber, "Serial number must not be null");
-    RevokedCertificate revokedCertificate = new RevokedCertificate(serialNumber, revocationTime, reason);
-    storage.revokeCertificate(revokedCertificate);
+    final RevokedCertificate revokedCertificate = new RevokedCertificate(serialNumber, revocationTime, reason);
+    this.storage.revokeCertificate(revokedCertificate);
   }
 
   /** {@inheritDoc} */
-  @Override public List<BigInteger> removeExpiredCerts(final int gracePeriodSeconds){
+  @Override
+  public List<BigInteger> removeExpiredCerts(final int gracePeriodSeconds) {
     // This function has no meaning in this repository.
     return Collections.emptyList();
   }

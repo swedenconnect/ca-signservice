@@ -1,24 +1,25 @@
+/*
+ * Copyright (c) 2022 Sweden Connect
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package se.swedenconnect.ca.headless.ca.storage.impl;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.bouncycastle.asn1.x509.CRLReason;
-import org.bouncycastle.util.encoders.Base64;
-import org.cryptacular.StreamException;
-import org.cryptacular.util.CertUtil;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-import se.swedenconnect.ca.engine.ca.attribute.CertAttributes;
-import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
-import se.swedenconnect.ca.engine.revocation.crl.RevokedCertificate;
-import se.swedenconnect.ca.headless.TestData;
-import se.swedenconnect.ca.headless.ca.storage.CARepoStorage;
-import se.swedenconnect.ca.headless.ca.storage.CertificateStorageException;
-import se.swedenconnect.ca.headless.ca.storage.StorageEncryption;
-import se.swedenconnect.ca.headless.ca.storage.StoredCertificateIterator;
-import se.swedenconnect.ca.headless.ca.storage.data.StorageRecord;
-import se.swedenconnect.ca.headless.utils.CertNameUtils;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,16 +33,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.apache.commons.io.FileUtils;
+import org.bouncycastle.asn1.x509.CRLReason;
+import org.bouncycastle.util.encoders.Base64;
+import org.cryptacular.util.CertUtil;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
-/**
- * Description
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
- */
+import lombok.extern.slf4j.Slf4j;
+import se.swedenconnect.ca.engine.ca.attribute.CertAttributes;
+import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
+import se.swedenconnect.ca.engine.revocation.crl.RevokedCertificate;
+import se.swedenconnect.ca.headless.TestData;
+import se.swedenconnect.ca.headless.ca.storage.CARepoStorage;
+import se.swedenconnect.ca.headless.ca.storage.CertificateStorageException;
+import se.swedenconnect.ca.headless.ca.storage.StorageEncryption;
+import se.swedenconnect.ca.headless.ca.storage.StoredCertificateIterator;
+import se.swedenconnect.ca.headless.ca.storage.data.StorageRecord;
+import se.swedenconnect.ca.headless.utils.CertNameUtils;
+
 @Slf4j
-class DefaultCARepoStorageTest {
+public class DefaultCARepoStorageTest {
 
   private static File storageDataDir;
   private static StorageEncryption encrypt1;

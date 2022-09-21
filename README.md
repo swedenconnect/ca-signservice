@@ -1,13 +1,14 @@
+![Logo](https://raw.githubusercontent.com/swedenconnect/signservice/main/docs/images/sweden-connect.png)
 
 ---
-# CURRENT BUILD VERSION = 1.0.0
+### CURRENT BUILD VERSION = 1.0.0
 ---
-# Sign service CA
 
+# SignService CA
 
-This repo contains the source code for the sign service CA. The service is adapted to provide a high volume CA for a sign service. This service has no web GUI for management and cert issuance and consequently provides no login support for admin login.
+This repository contains the source code for the SignService CA. The service is adapted to provide a high volume CA for a signature service. This service has no web GUI for management and certificate issuance and consequently provides no login support for admin login.
 
-The only option tha manage this CA service is by means of a CMC API and direct access to the CA repository.
+The only option to manage this CA service is by means of a CMC API and direct access to the CA repository.
 
 The source code builds a Spring Boot application that may be deployed as is, or may be built into a Docker image using any of the provided Dockerfile examples.
 
@@ -24,6 +25,7 @@ Each CA instance has its own CA repository and its own revocation services.
 | [HSM key generation support](hsm-support)              | Scripts for key generation inside a HSM module to support the CA. A script for software key generation is also provided |
 
 ## 1. Building artifacts
+
 ### 1.1. Building the source code
 
 Building source codes referred to here requires maven version 3.3 or higher.
@@ -36,8 +38,7 @@ To build the Headless CA, a total of 3 projects need to be built in the followin
  4. https://github.com/swedenconnect/ca-service-base (version 1.3.4)
  5. https://github.com/swedenconnect/ca-signservice (This repo) (version 1.0.0)
 
-The master branch of each repo holds the latest code under development. This is usually a SNAPSHOT version.
-For deployment, it is advisable to build a release version. Each release have a corresponding release branch. To build the source code, select the release branch of the latest release version before building the source code.
+The master branch of each repository holds the latest code under development. This is usually a SNAPSHOT version. For deployment, it is advisable to build a release version. Each release have a corresponding release branch. To build the source code, select the release branch of the latest release version before building the source code.
 
 Each one of the projects are built by executing the following command from the project folder containing the pom.xml file:
 
@@ -168,7 +169,7 @@ These settings define the allowed public key types and minimum key length requir
 
 ##### 2.2.2.3 TLS configuration
 
-The Spring boot application may provide its services over encrypted TLS as alternative to the main service port. This communication is allways offered on port 8443. TLS is configured using the following standard Spring Boot properties
+The Spring boot application may provide its services over encrypted TLS as alternative to the main service port. This communication is always offered on port 8443. TLS is configured using the following standard Spring Boot properties
 
 | Propety                       | Value                                                                                                         |
 |-------------------------------|---------------------------------------------------------------------------------------------------------------|
@@ -643,3 +644,8 @@ The following resources are available:
     }
 }
 ```
+
+-----
+
+Copyright &copy; 2022, [Myndigheten för digital förvaltning - Swedish Agency for Digital Government (DIGG)](http://www.digg.se). Licensed under version 2.0 of the [Apache License](http://www.apache.org/licenses/LICENSE-2.0).
+

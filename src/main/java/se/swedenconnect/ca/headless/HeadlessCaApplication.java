@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022.  Agency for Digital Government (DIGG)
+ * Copyright (c) 2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.headless;
 
 import org.springframework.boot.SpringApplication;
@@ -21,13 +20,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Application main class
- *
- * @author Martin Lindström (martin@idsec.se)
- * @author Stefan Santesson (stefan@idsec.se)
+ * Application main class.
  */
 @EnableScheduling
-@SpringBootApplication(scanBasePackages = { "se.swedenconnect.ca.headless", "se.swedenconnect.ca.service.base"})
+@SpringBootApplication(scanBasePackages = { "se.swedenconnect.ca.headless", "se.swedenconnect.ca.service.base" })
 public class HeadlessCaApplication {
 
   public static void main(String[] args) {
