@@ -22,12 +22,10 @@ import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.cert.X509CertificateHolder;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuanceException;
 import se.swedenconnect.ca.engine.ca.issuer.CertificateIssuerModel;
@@ -45,24 +43,11 @@ import se.swedenconnect.security.credential.PkiCredential;
 @Slf4j
 public class SignServiceCA extends AbstractBasicCA {
 
-  @Getter
-  private final List<X509CertificateHolder> caCertificateChain;
-
   public SignServiceCA(final PkiCredential issuerCredential,
       final CARepository caRepository, final CertificateIssuerModel certIssuerModel,
       final CRLIssuerModel crlIssuerModel, final List<String> crlDistributionPoints)
       throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
     super(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
-    this.caCertificateChain = issuerCredential.getCertificateChain().stream()
-        .map(c -> {
-          try {
-            return new X509CertificateHolder(c.getEncoded());
-          }
-          catch (CertificateEncodingException | IOException e) {
-            throw new SecurityException(e);
-          }
-        })
-        .collect(Collectors.toList());
     log.info("Instantiated Headless CA service instance");
   }
 
