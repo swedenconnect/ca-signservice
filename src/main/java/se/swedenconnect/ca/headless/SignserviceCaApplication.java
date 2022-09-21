@@ -15,18 +15,19 @@
  */
 package se.swedenconnect.ca.headless;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@TestPropertySource(locations = "classpath:application-test.properties")
-@SpringBootTest
-@ActiveProfiles("nodb")
-class HeadlessCaApplicationTests {
+/**
+ * Sign service CA application main class.
+ */
+@EnableScheduling
+@SpringBootApplication(scanBasePackages = { "se.swedenconnect.ca.headless", "se.swedenconnect.ca.service.base" })
+public class SignserviceCaApplication {
 
-  @Test
-  void contextLoads() {
+  public static void main(String[] args) {
+    SpringApplication.run(SignserviceCaApplication.class, args);
   }
 
 }

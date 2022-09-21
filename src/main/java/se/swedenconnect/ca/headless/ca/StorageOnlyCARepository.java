@@ -171,8 +171,4 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
     return Collections.emptyList();
   }
 
-  public enum UpdateType {
-    addCert, revokeCert
-  }
-
 }
