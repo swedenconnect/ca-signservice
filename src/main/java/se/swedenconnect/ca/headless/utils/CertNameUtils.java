@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022. IDsec Solutions AB
+ * Copyright (c) 2022 Sweden Connect
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package se.swedenconnect.ca.headless.utils;
-
-import lombok.extern.java.Log;
-import org.bouncycastle.asn1.*;
 
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-@Log
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERUTF8String;
+
 public class CertNameUtils {
 
   /**
    * Gets a map of subject DN attributes.
    *
-   * @param cert
-   *          X.509 certificate
+   * @param cert X.509 certificate
    * @return subject DN attribute map
-   * @throws IOException
-   *           for errors getting the subject attributes from the certificate
+   * @throws IOException for errors getting the subject attributes from the certificate
    */
   public static Map<ASN1ObjectIdentifier, String> getSubjectAttributes(final Certificate cert) throws IOException {
 
-    try (ASN1InputStream ain = new ASN1InputStream(cert.getEncoded())){
+    try (ASN1InputStream ain = new ASN1InputStream(cert.getEncoded())) {
       ASN1Sequence certSeq = null;
       certSeq = (ASN1Sequence) ain.readObject();
       final ASN1Sequence tbsSeq = (ASN1Sequence) certSeq.getObjectAt(0);
@@ -54,7 +55,7 @@ public class CertNameUtils {
       final Map<ASN1ObjectIdentifier, String> subjectDnAttributeMap = getSubjectAttributes(subjectDn);
       return subjectDnAttributeMap;
     }
-    catch (CertificateEncodingException e) {
+    catch (final CertificateEncodingException e) {
       throw new IOException("Failed to get subject attributes from certificate - " + e.getMessage(), e);
     }
   }
@@ -62,8 +63,7 @@ public class CertNameUtils {
   /**
    * Gets a map of recognized subject DN attributes.
    *
-   * @param subjectDn
-   *          subject DN
+   * @param subjectDn subject DN
    * @return subject DN attribute map
    */
   public static Map<ASN1ObjectIdentifier, String> getSubjectAttributes(final ASN1Sequence subjectDn) {
