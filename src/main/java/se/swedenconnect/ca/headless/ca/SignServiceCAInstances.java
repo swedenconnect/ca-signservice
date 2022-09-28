@@ -40,10 +40,13 @@ import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBui
 import se.swedenconnect.ca.engine.ca.models.cert.impl.SelfIssuedCertificateModelBuilder;
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
+import se.swedenconnect.ca.engine.revocation.ocsp.OCSPModel;
+import se.swedenconnect.ca.engine.revocation.ocsp.OCSPResponder;
+import se.swedenconnect.ca.headless.ca.ocsp.StorageOnlyOCSPResponder;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
-import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
-import se.swedenconnect.ca.service.base.configuration.instance.impl.AbstractDefaultCAServices;
+import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
+import se.swedenconnect.ca.service.base.ca.impl.AbstractDefaultCAServices;
 import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
@@ -85,6 +88,12 @@ public class SignServiceCAInstances extends AbstractDefaultCAServices {
   protected void customizeOcspCertificateModel(
       final DefaultCertificateModelBuilder certModelBuilder, final String instance) {
     // We don't add any custom content of OCSP service certificates
+  }
+
+  /** {@inheritDoc} */
+  @Override protected OCSPResponder createOcspResponder(PkiCredential ocspKeySource, OCSPModel ocspModel,
+    CARepository caRepository) throws NoSuchAlgorithmException {
+    return new StorageOnlyOCSPResponder(ocspKeySource, ocspModel, (StorageOnlyCARepository) caRepository);
   }
 
   /** {@inheritDoc} */

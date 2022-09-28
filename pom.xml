@@ -20,7 +20,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <ca.service.base.version>1.4.0</ca.service.base.version>
-    <sivaltrust.commons.version>1.0.2</sivaltrust.commons.version>
     <java.version>11</java.version>
   </properties>
 
@@ -42,11 +41,6 @@
       <groupId>se.swedenconnect.ca</groupId>
       <artifactId>ca-service-base</artifactId>
       <version>${ca.service.base.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>se.swedenconnect.sigvaltrust.service</groupId>
-      <artifactId>commons</artifactId>
-      <version>${sivaltrust.commons.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

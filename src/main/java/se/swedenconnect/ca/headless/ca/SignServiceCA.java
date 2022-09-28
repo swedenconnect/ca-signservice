@@ -34,7 +34,7 @@ import se.swedenconnect.ca.engine.ca.models.cert.impl.DefaultCertificateModelBui
 import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
-import se.swedenconnect.ca.service.base.configuration.instance.ca.AbstractBasicCA;
+import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
 import se.swedenconnect.security.credential.PkiCredential;
 
 /**

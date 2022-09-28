@@ -40,9 +40,6 @@ import se.swedenconnect.ca.service.base.configuration.service.HtmlServiceInfo;
 @Controller
 public class HeadlessCAMainController {
 
-  @SuppressWarnings("unused")
-  private final Map<String, EmbeddedLogo> logoMap;
-
   private final ServicePortConstraints servicePortConstraints;
 
   private final HtmlServiceInfo htmlServiceInfo;
@@ -52,8 +49,7 @@ public class HeadlessCAMainController {
 
   @Autowired
   public HeadlessCAMainController(final HtmlServiceInfo htmlServiceInfo,
-      final Map<String, EmbeddedLogo> logoMap, final ServicePortConstraints servicePortConstraints) {
-    this.logoMap = logoMap;
+      final ServicePortConstraints servicePortConstraints) {
     this.servicePortConstraints = servicePortConstraints;
     this.htmlServiceInfo = htmlServiceInfo;
   }

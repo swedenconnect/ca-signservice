@@ -1,56 +1,18 @@
-<!--
-  ~ Copyright (c) 2022.  Agency for Digital Government (DIGG)
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  -->
-
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="htmlInfo" type="se.swedenconnect.ca.service.base.configuration.service.HtmlServiceInfo"*/-->
 <head>
     <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
     <meta name="description" th:content="${htmlInfo.getHtmlDescription()}" />
     <meta name="author" th:content="${htmlInfo.getHtmlAuthor()}"/>
-    <meta http-equiv='pragma' content='no-cache'/>
-    <meta http-equiv='cache-control' content='no-cache, no-store, must-revalidate'/>
-    <meta http-equiv="Expires" content="-1"/>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-
-    <script src="webjars/jquery/3.6.0/jquery.min.js"></script>
-    <script src="webjars/popper.js/1.16.1/dist/umd/popper.min.js"></script>
-    <script src="webjars/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="webjars/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
-    <script src="webjars/bootstrap-select/1.13.18/js/i18n/defaults-sv_SE.min.js"></script>
-
-    <link rel="stylesheet" href="webjars/bootstrap/4.5.2/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="webjars/bootstrap-select/1.13.18/css/bootstrap-select.min.css"/>
-    <link rel="stylesheet" href="css/main.css"/>
-
     <title th:text="${htmlInfo.getHtmlTitlePrefix()} + ' - Main page'"></title>
+
 </head>
 <body>
-<div class="container">
-    <div class="card" style="margin-top: 10px">
-        <div class="card-header" style="text-align: center">
-            <h2>Basic Headless CA Service</h2>
-        </div>
-        <div class="card-body">
-            <p>This CA service does not have any web UI</p>
-            <p>All administration is handled using the CMC API</p>
-        </div>
-    </div>
-</div>
-
+<h2 th:text="${htmlInfo.getHomePageTitle()}">Basic Headless CA Service</h2>
+<h4 th:text="${htmlInfo.getHtmlDescription()}"></h4>
+<hr>
+<p>This CA service does not have any web UI</p>
+<p>All administration is handled using the CMC API</p>
 </body>
 </html>

@@ -43,7 +43,7 @@ import se.swedenconnect.ca.headless.ca.storage.StorageEncryption;
 import se.swedenconnect.ca.headless.ca.storage.impl.DefaultCARepoStorage;
 import se.swedenconnect.ca.headless.ca.storage.impl.DefaultStorageEncryption;
 import se.swedenconnect.ca.service.base.configuration.BasicServiceConfig;
-import se.swedenconnect.ca.service.base.configuration.instance.CAServices;
+import se.swedenconnect.ca.service.base.ca.CAServices;
 import se.swedenconnect.ca.service.base.configuration.instance.InstanceConfiguration;
 import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
