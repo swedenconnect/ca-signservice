@@ -1,11 +1,10 @@
-![Logo](https://raw.githubusercontent.com/swedenconnect/signservice/main/docs/images/sweden-connect.png)
-
----
-### CURRENT BUILD VERSION = 1.0.0
----
+![Logo](documentation/images/sweden-connect.png)
 
 # SignService CA
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+---
 This repository contains the source code for the SignService CA. The service is adapted to provide a high volume CA for a signature service. This service has no web GUI for management and certificate issuance and consequently provides no login support for admin login.
 
 The only option to manage this CA service is by means of a CMC API and direct access to the CA repository.
