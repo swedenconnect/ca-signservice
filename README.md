@@ -397,16 +397,10 @@ This library also provides code for implementing a compatible CMC client used to
 
 External PKCS#11 tokens, as well as softhsm PKCS#11 tokens can be configured through an external PKCS#11 configuration file using the following properties in application.properties value:
 
-| Parameter                                     | Value                                                                                                                                                                                             |
-|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ca-service.pkcs11.external-config-locations` | Specifies an array of file paths to PKCS#11 configuration files used to setup PKCS11 providers. **If this option is set, all other options above are ignored**.                                   |
+| Parameter                                     | Value                                                                                                      |
+|-----------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `ca-service.pkcs11.external-config-locations` | Specifies an absolute file name (and path) to a PKCS#11 configuration file used to setup PKCS11 providers. |
 
-Soft HSM properties in addition to generic PKCS#11 properties above. Note that for soft hsm, the parameters slot, slotListIndex and slotListIndexMaxRange are ignored.
-
-| Parameter                               | Value                                                                                                                          |
-|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| `ca-service.pkcs11.softhsm.keylocation` | The location of keys using the name convention alias.key and alias.crt.                                                        |
-| `ca-service.pkcs11.softhsm.pass`        | The pin/password for the soft hsm slot to use. This pin/password should be configured as the password for each configured key. |
 
 ## 5 Audit logging to syslog
 
