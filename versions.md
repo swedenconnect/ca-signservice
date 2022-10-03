@@ -12,3 +12,5 @@
 Release notes are provided only for updates that require configuration changes or other deployment considerations.
 
 ### 1.0.0
+
+See README.md
