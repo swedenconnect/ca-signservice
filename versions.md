@@ -4,7 +4,7 @@
 
 | Version | Comment                                                                              | Date       |
 |---------|--------------------------------------------------------------------------------------|------------|
-| 1.0.0   | Initial version                                                                      | 2022-02-07 |
+| 1.0.0   | Initial version                                                                      | 2022-10-03 |
 
 
 ## Important release notes (most recent on top)
