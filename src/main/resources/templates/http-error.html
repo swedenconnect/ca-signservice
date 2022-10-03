@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--/*@thymesVar id="htmlInfo" type="se.swedenconnect.ca.service.base.configuration.service.HtmlServiceInfo"*/-->
+    <meta name="description" th:content="${htmlInfo.getHtmlDescription()}" />
+    <meta name="author" th:content="${htmlInfo.getHtmlAuthor()}"/>
+    <meta charset="UTF-8">
+    <title th:text="${htmlInfo.getHtmlTitlePrefix()} + ' - Error page'"></title>
+</head>
+<body>
+<h2>An error has occurred</h2>
+
+<!--/*@thymesVar id="message" type="java.lang.String"*/-->
+<p th:if="${message != null}" th:text="${message}"></p>
+
+</body>
+</html>
