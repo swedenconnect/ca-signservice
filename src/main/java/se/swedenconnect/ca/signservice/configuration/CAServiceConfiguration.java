@@ -170,7 +170,7 @@ public class CAServiceConfiguration implements ApplicationEventPublisherAware {
           128,
           instanceCryptoConfig.getIterations());
     }
-    log.info("Setting up encryption with default key size and interations");
+    log.info("Setting up encryption with default key size and iterations");
     return new DefaultStorageEncryption(
         instanceCryptoConfig.getKey().toCharArray(),
         instanceCryptoConfig.getKid(),

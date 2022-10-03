@@ -17,11 +17,6 @@ The CA service application may hold any number of Certification Authority (CA) s
 
 Each CA instance has its own CA repository and its own revocation services.
 
-**This project holds one complementary tool:**
-
-| Tool                                                   | Descritpion                                                                                                             |
-|--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
-| [HSM key generation support](hsm-support)              | Scripts for key generation inside a HSM module to support the CA. A script for software key generation is also provided |
 
 ## 1. Building artifacts
 
@@ -29,17 +24,10 @@ Each CA instance has its own CA repository and its own revocation services.
 
 Building source codes referred to here requires maven version 3.3 or higher.
 
-To build the Headless CA, a total of 3 projects need to be built in the following order:
+The master branch of each repo holds the latest code under development. This is usually a SNAPSHOT version.
+For deployment, it is advisable to build a release version. Each release have a corresponding release branch. To build the source code, select the release branch of the latest release version before building the source code.
 
- 1. https://github.com/swedenconnect/ca-engine (version 1.2.1)
- 2. https://github.com/swedenconnect/ca-cmc (version 1.3.0)
- 3. https://github.com/swedenconnect/sigvaltrust-service/tree/main/commons (version 1.0.2)
- 4. https://github.com/swedenconnect/ca-service-base (version 1.3.4)
- 5. https://github.com/swedenconnect/ca-signservice (This repo) (version 1.0.0)
-
-The master branch of each repository holds the latest code under development. This is usually a SNAPSHOT version. For deployment, it is advisable to build a release version. Each release have a corresponding release branch. To build the source code, select the release branch of the latest release version before building the source code.
-
-Each one of the projects are built by executing the following command from the project folder containing the pom.xml file:
+The application is built by executing the following command from the project folder containing the pom.xml file:
 
 > mvn clean install
 
@@ -51,13 +39,17 @@ Three sample Dockerfile files are provided:
 |--------------------|----------------------------------------------------------------------------------------------------------------------------------------|
 | Dockerfile         | Builds a docker image that exposes all relevant default ports                                                                          |
 | Dockerfile-debug   | Builds a docker image that allows attachment of a remote debugger on port 8000                                                         |
-| Dockerfile-softhsm | Builds a docker image that includes a SoftHSM and tools to load keys into the SoftHSM. This image is used to test the HSM PKCS#11 API. |
 
 A docker image can be built using the following command:
 
 > docker build -f Dockerfile -t headless-ca .
 
 Please refer to the Docker manual for instructions on how to build and/or modify these docker images.
+
+**Testing with SoftHSM**
+
+HSM support for this CA service is based on the Credential Support library: [https://github.com/swedenconnect/credentials-support](https://github.com/swedenconnect/credentials-support)
+Scripts for building an extended docker image with support for SoftHSM with imported and deployed keys are available here: [https://github.com/swedenconnect/credentials-support/tree/main/hsm-support-scripts/soft-hsm-deployment](https://github.com/swedenconnect/credentials-support/tree/main/hsm-support-scripts/soft-hsm-deployment)
 
 
 ## 2. Configuration
@@ -68,7 +60,7 @@ The following environment variables are essential to the CA application:
 | Environment variable                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 |-------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `SPRING_CONFIG_ADDITIONAL_LOCATION` | Specifies the absolute path location of the configuration data folder. This folder must specify a location that is available to the CA application and the CA application must have write access to this folder and all its sub-folders. The absolute path specified by this variable must end with a delimiter ("/") so that `${SPRING_CONFIG_ADDITIONAL_LOCATION}child` specifies the absolute path of the child folder. (Note: this is a rule set by Spring Boot). |
-| `SPRING_PROFILES_ACTIVE`            | Specifies an optional application profiles used by the CA service. This variable should be set to the value "`nodb`" if no database implementation of the CA repository is used (Se section on CA repository options).                                                                                                                                                                                                                                                |
+| `SPRING_PROFILES_ACTIVE`            | Specifies an optional application profiles used by the CA service. For normal operation this environment variable should be absent or empty.                                                                                                                                                                                                                                                                                                                          |
 | `TZ`                                | Specifies the timezone used by the application. This should be set to "`Europe/Stockholm`"                                                                                                                                                                                                                                                                                                                                                                            |
 
 The `documentation/sample-config` folder contains sample configuration data. A corresponding folder must be available to the CA application at the location specified by `SPRING_CONFIG_ADDITIONAL_LOCATION`.
@@ -77,11 +69,12 @@ The `documentation/sample-config` folder contains sample configuration data. A c
 ### 2.2. Configuration files
 The configuration folder holds the following files and folders:
 
-| Resource                 | Description                                                                                           |
-|--------------------------|-------------------------------------------------------------------------------------------------------|
-| `cfg`                    | Holds optional configuration data files applicable to the CA application such as logotype image files |
-| `instances`              | holds configuration and data files related to all configured CA instances.                            |
-| `application.properties` | Main configuration file                                                                               |
+| Resource                 | Description                                                                                                                    |
+|--------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| `cfg`                    | Holds optional configuration data files applicable to the CA application such as logotype image files                          |
+| `cmc`                    | Holds optional configuration data files supporting the CMC API of the service as specified by `application.properties` values. |
+| `instances`              | holds configuration and data files related to all configured CA instances.                                                     |
+| `application.properties` | Main configuration file                                                                                                        |
 
 #### 2.2.1. Instances folder
 
@@ -150,8 +143,6 @@ The following properties should be set to appropriate values:
 | ca-service.config.base-url               | The base URL of the CA service (Only protocol and host name such as: https://service.example.com), not including any path information.                                                             |
 | ca-service.config.verbose-cert-print     | Determines the level of detail in presentation of certificate information. Default set to `false`. Setting this to true will for example print the content of signature values and key parameters. |
 | ca-service.policy.admin.enabled-ui-ports | The ports that are allowed to expose service front page. See details below.                                                                                                                        |
-| ca-service.config.logo                   | The path to the logo of the service. Typically set to ${ca-service.config.data-directory}cfg/logo.svg                                                                                              |
-| ca-service.config.icon                   | The path to the icon of the service. Typically set to ${ca-service.config.data-directory}cfg/icon.svg                                                                                              |
 
 Note: The `ca-service.policy.admin.enabled-ui-ports` property includes a list of allowed ports for the front page. A typical setting is: ${ca-service.config.control-port} to allow the front page to be shown on the local network but not via the open internet.
 
@@ -226,7 +217,6 @@ A key sources are set up using the following parameters :
 | type                 | Specifies the type of key source. See section 2.2.1.2 for the different key source types                                                                                                                                                                                                                                                                           |
 | alias                | The alias/name of the key. for jks and pkcs12 key sources this value is the key alias in the key store. for pkcs11 this is the id of the key in the HSM and for pem keys this parameter is ignored.                                                                                                                                                                |
 | pass                 | Password/secret used to access the key. for pem keys this is the key decryption password if the key is encrypted. If the pem key is no encrypted, this paramter is ignored.                                                                                                                                                                                        |
-| reloadable-keys      | A parameter relevant to HSM keys only. A value of true introduce a key test before using the HSM key to make sure the key is still attached to the service. If the key is no longer available, and attempt to reload the key is done before usage. Setting this to true have a small performance penalty, but generally should be set to true for HSM key sources. |
 
 The property name format for a ca key is:
 > ca-service.instance.conf.{instance-id}.ca.key-source.{parameter-name}
@@ -240,7 +230,6 @@ Example of key source configuration for the CA instance named ca01 with ca and o
 ca-service.instance.conf.ca01.ca.key-source.type=pkcs11
 ca-service.instance.conf.ca01.ca.key-source.alias=ca01-key
 ca-service.instance.conf.ca01.ca.key-source.pass=1234
-ca-service.instance.conf.ca01.ca.key-source.reloadable-keys=true
 ca-service.instance.conf.ca01.ocsp.key-source.type=jks
 ca-service.instance.conf.ca01.ocsp.key-source.alias=ocsp
 ca-service.instance.conf.ca01.ocsp.key-source.pass=secret
@@ -271,8 +260,9 @@ The following parameters are available for the "ca" entity type:
 | validity.unit                 | The unit type for validity period settings of issued certificates. Unit alternatives are "M", "H", "D" or "Y" for Minute, Hour, Day or Year (case insensitive)           |
 | validity.amount               | The amount of time units issued certificates will be valid                                                                                                               |
 | crl-validity.start-offset-sec | Same as `validity.start-offset-sec`, but for CRL validity period.                                                                                                        |
-| crl-validity.unit             | same as `validity.unit`, but for CRL validity period.                                                                                                                    |
-| crl-validity.amount           | same as `validity.amount`, but for CRL validity period.                                                                                                                  |
+| crl-validity.unit             | Same as `validity.unit`, but for CRL validity period.                                                                                                                    |
+| crl-validity.amount           | Same as `validity.amount`, but for CRL validity period.                                                                                                                  |
+| custom-cert-storage-location  | If present, it specifies an alternate storage location for the certificate storage of an instance.                                                                       |
 
 The following parameters are available for the "ocsp" entity type:
 
@@ -284,7 +274,7 @@ The following parameters are available for the "ocsp" entity type:
 | validity.unit             | Same as `validity.unit`, but for OCSP validity period.                                                                                                                                                                                                                                              |
 | validity.amount           | Same as `validity.amount`, but for OCSP validity period. However a value of "0" means that the OCSP response will not have a "Next update" time set. This is the typical configuration when OCSP responses is issued directly based on the CA repository source (The information is allways fresh). |
 
-THe following example illustrates typical default and instance service configuration for the instances named ca01 and rot01:
+The following example illustrates typical default and instance service configuration for the instances named ca01 and rot01:
 
 ```
 ca-service.instance.conf.default.ca.algorithm=http://www.w3.org/2001/04/xmldsig-more#rsa-sha256
@@ -324,100 +314,40 @@ ca-service.instance.conf.ca01.ocsp.name.common-name=OCSP Responder
 
 ##### 2.2.2.8 CA repository configuration
 
-This CA service includes the alternatives to use file storage or database storage for the CA repository.
+This CA service includes a CA repository implementation adapted to the following conditions:
 
-Use of database storage is the default option which requires `application.properties` to include appropriate settings for the database connection
-for the repository. The option to use file based storage is mainly intended for test, but may be used in production environments where the operational
-security advantages of a complete database is not required or desired. In order to use the file based CA repository it is necessary to opt-out of
-database usage. This can be done by activating the Spring profile "`nodb`" (See section 2.1). Using this profile causes the application to use a file based
-repository and causes the application to ignore any database settings below.
+ - Very high volume of certificates issued every day
+ - No integrated functions for traversing or searching among issued certificates. All access to issued certificates is done through external tools outside this application.
+ - Revocation is very improbable and considered a very rare event.
 
-Database implementation use Spring Boot JPA (Jakarta Persistence API). This implementation allows a wide range of settings to optimize connection to
-any type of database. A useful guide is available here ([A guide to JPA with Spring](https://www.baeldung.com/the-persistence-layer-with-spring-and-jpa)).
+The approach to CA repository used here is that all issued certificates are stored to a daily repository file in a dedicated certificate
+repository directory. Each day file is named `certStore-yyy-MM-dd`.
 
-The dependencies of this project includes necessary dependencies for MySQL and PostgreSQL. To use any other DB service, relevant dependencies
-must be added to the project.
+Cert storage can be done either in plain-text or as encrypted data.
 
-###### 2.2.2.8.1 General settings
+property parameter naming for storage encryption configuration follows the following structure:
 
-Database is configured using Spring Boot property settings for JPA and spring datasource properties as described in this section. The following general settings are allways relevant.
+> ca-service.instance.storage-crypto.{instance-id}.{parameter-name}
 
-| Property                      | Description                                                                                                                                                                                                                                                                                                                                                                      |
-|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| spring.jpa.hibernate.ddl-auto | This property decides wether the appikcation should create a new data base on startup. The choices are: `create`, `update`, `create-drop`, `validate`, and `none`. create is used to create the database on first startup unless the database is created using a script or by other means. Once the database table is created, the service should allways use the `none` option. |
-| spring.datasource.url         | Specifies the url to the database. e.g: `jdbc:mysql://10.1.1.2:3306/headless_ca`                                                                                                                                                                                                                                                                                                 |
-| spring.datasource.username    | The username of the db account accessing the database                                                                                                                                                                                                                                                                                                                            |
-| spring.datasource.password    | The password of the db account user                                                                                                                                                                                                                                                                                                                                              |
+The following parameters are available for storage encryption settings:
 
-These are the only options that are needed in order to connect to a MySQL database.
+| Parameter  | Value                                                                                                               |
+|------------|---------------------------------------------------------------------------------------------------------------------|
+| enabled    | Set to true to enable storage encryption for this instance                                                          |
+| salt       | A base64 encoded string holding the bytes of a key salt value used for this instance and key                        |
+| key        | A string password that is transformed to an encryption key                                                          |
+| kid        | Key ID value that will be applied to the encrypted data to support key rollover and decryption using multiple keys. |
+| key-length | Optional. The length of the key derived fromt he password (default 128).                                            |
+| iterations | Optional. The the number of times a password is hashed to derive the key (default 65535).                           |
 
-###### 2.2.2.8.2 PostgreSQL
-When connection to a PostgreSQL database, the following additional properties should be set:
-
-| Property                                                                | Description                                                                                                                                                                                                                                  |
-|-------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `spring.jpa.database=POSTGRESQL`                                        | Setting database to PostgreSQL in JPA                                                                                                                                                                                                        |
-| `spring.datasource.platform=postgres`                                   | Setting database to PostgreSQL in Spring datasource                                                                                                                                                                                          |
-| `spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true` | This entry is put just to avoid a warning message in the logs when you start the spring-boot application. This bug is from hibernate which tries to retrieve some metadata from postgresql db and failed to find that and logs as a warning. |
-
-###### 2.2.2.8.3 Optional
-
-The following property settings could be considered in addition to the settings above:
-
-| Property                     | Description                                                                                                                                                            |
-|------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| spring.jpa.generate-ddl=true | Work as a master switch for the `spring.jpa.hibernate.ddl-auto` setting described above. If theis setting is set to false, then all autogenerate actions are disabled. |
-| spring.jpa.show-sql=true     | Setting this property to true sends SQL query messages to standard out.                                                                                                |
-
-###### 2.2.2.8.4 Examples
-Here are some typical configuration examples:
-
-**MySQL**
+**Example:**
 
 ```
-spring.jpa.hibernate.ddl-auto=none
-spring.datasource.url=jdbc:mysql://10.1.1.2:3306/headless_ca
-spring.datasource.username=cadbuser
-spring.datasource.password=S3crEt
-
+ca-service.storage-crypto.sign02.enabled=true
+ca-service.storage-crypto.sign02.salt=ZW5jcnlwdGlvbi1zYWx0LTAwMQ==
+ca-service.storage-crypto.sign02.key=S3cr3t
+ca-service.storage-crypto.sign02.kid=key01
 ```
-
-**PostgreSQL**
-
-```
-spring.jpa.database=POSTGRESQL
-spring.datasource.platform=postgres
-spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
-spring.datasource.username=postgres
-spring.datasource.password=root
-spring.jpa.show-sql=true
-spring.jpa.generate-ddl=true
-spring.jpa.hibernate.ddl-auto=none
-spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
-
-```
-
-###### 2.2.2.8.4 Database table creation
-
-The CA repository requires a table named `dbcertificate_record`. This table can be created programmatically using `spring.jpa.hibernate.ddl-auto=create`.
-For more control, it may be advisable to manually create the database using a SQL create statement. The precise syntax of such create statement may differ for different
-databases. The following create statement can be used to create the necessary table in MySQL:
-
-```
-CREATE TABLE `dbcertificate_record` (
-`id` varchar(255) NOT NULL,
-`certificate` blob NOT NULL,
-`expiry_date` bigint DEFAULT NULL,
-`instance` varchar(255) DEFAULT NULL,
-`issue_date` bigint DEFAULT NULL,
-`reason` int DEFAULT NULL,
-`revocation_time` bigint DEFAULT NULL,
-`revoked` bit(1) DEFAULT NULL,
-PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-```
-
-
 
 
 ## 3. Operation
@@ -465,17 +395,11 @@ This library also provides code for implementing a compatible CMC client used to
 
 ## 4 HSM configuration
 
-External PKCS#11 tokens, as well as softhsm PKCS#11 tokens can be configured through the following properties in application.properties:
+External PKCS#11 tokens, as well as softhsm PKCS#11 tokens can be configured through an external PKCS#11 configuration file using the following properties in application.properties value:
 
 | Parameter                                     | Value                                                                                                                                                                                             |
 |-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ca-service.pkcs11.lib`                       | location of pkcs#11 library                                                                                                                                                                       |
-| `ca-service.pkcs11.name`                      | A chosen name of the PKCS#11 provider. The actual name of the provider will be "SunPKCS11-{this name}-{index}".                                                                                   |
-| `ca-service.pkcs11.slotListIndex`             | The start slot index to use (default 0).                                                                                                                                                          |
-| `ca-service.pkcs11.slotListIndexMaxRange`     | The maximum number of slots after start index that will be used if present. Default null. A null value means that only 1 slot will be used.                                                       |
-| `ca-service.pkcs11.slot`                      | The actual name of the slot to use. If this parameter is set, then slotListIndex should not be set.                                                                                               |
 | `ca-service.pkcs11.external-config-locations` | Specifies an array of file paths to PKCS#11 configuration files used to setup PKCS11 providers. **If this option is set, all other options above are ignored**.                                   |
-| `ca-service.pkcs11.reloadable-keys`           | Specifies if private keys shall be tested and reloaded if connection to the key is lost, prior to each usage. Using this option (**true**) have performance penalties but may increase stability. |
 
 Soft HSM properties in addition to generic PKCS#11 properties above. Note that for soft hsm, the parameters slot, slotListIndex and slotListIndexMaxRange are ignored.
 
