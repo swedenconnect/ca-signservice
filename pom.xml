@@ -5,13 +5,13 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.3</version>
+    <version>2.7.5</version>
     <relativePath />
   </parent>
 
   <groupId>se.swedenconnect.ca</groupId>
   <artifactId>signservice-ca</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
 
   <name>Sign service CA</name>
   <description>CA adapted to provide certificates to a high volume sign service with CMC as the only admin API</description>
@@ -19,7 +19,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <ca.service.base.version>1.4.0</ca.service.base.version>
+    <ca.service.base.version>1.5.0</ca.service.base.version>
     <java.version>11</java.version>
   </properties>
 
