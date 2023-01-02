@@ -393,6 +393,58 @@ Issuing and revoking certificates in the CA service provided by this application
 This library also provides code for implementing a compatible CMC client used to request and revoke certificates.
 
 
+### 3.4 Clustered services
+
+This service supports deployment on separate servers provided that they both have access to the same configuration folder 
+for the CA instance in order to access the same current CRL and list of revoked certificates. This also assures that the
+clustered services are consistent and use the same configuration setup and agree on the set of revoked certificates.
+
+A major reason for this design is caused by the choice to use file storage instead of database storage for CA repository and
+for revocation information.
+
+When setting up the clustered environment it is however important that each clustered service has its own storage folder in order
+to eliminate the risk of write conflicts. 
+
+In order to accomplish this, the following `application.property` settings must be set independently for each server.
+
+> ca-service.instance.conf.{instance-name}.ca.custom-cert-storage-location
+
+This can be achieved either by using environment variables for each server or by using separate profiles:
+
+**Example use of environment variable:**
+
+If a server (server01) is deployed using docker, the following use of environment variable setting will specify this property for
+instances  sigca01 and sigca02
+
+```
+-e "CA_SERVICE_INSTANCE_CONF_SIGCA01_CA_CUSTOM_CERT_STORAGE_LOCATION=/opt/server01/sigca01-certs" \
+-e "CA_SERVICE_INSTANCE_CONF_SIGCA02_CA_CUSTOM_CERT_STORAGE_LOCATION=/opt/server01/sigca02-certs"
+```
+
+**Example use of profiles:**
+
+Two CA instances (sigca01 and sigca02) are provided by two clustered servers represented by the profiles (server01 and server02)
+
+Then two configuration files are created:
+
+**application-server01.properties:**
+
+```
+ca-service.instance.conf.sigca01.ca.custom-cert-storage-location=/opt/server01/sigca01-certs
+ca-service.instance.conf.sigca02.ca.custom-cert-storage-location=/opt/server01/sigca02-certs
+```
+
+**application-server02.properties:**
+
+```
+ca-service.instance.conf.sigca01.ca.custom-cert-storage-location=/opt/server02/sigca01-certs
+ca-service.instance.conf.sigca02.ca.custom-cert-storage-location=/opt/server02/sigca02-certs
+```
+
+Server 01 is then started with active profile "server01" and server 02 is started with active profile "server02". This will cause the 
+server instances to store certificate data in separate locations but still share the same configuration data.
+
+
 ## 4 HSM configuration
 
 External PKCS#11 tokens, as well as softhsm PKCS#11 tokens can be configured through an external PKCS#11 configuration file using the following properties in application.properties value:
