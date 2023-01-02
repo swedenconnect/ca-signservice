@@ -5,5 +5,5 @@
  |____/  |_|  \__, | |_| |_|   |____/   \___| |_|      \_/   |_|  \___|  \___|    \____| /_/   \_\
               |___/
 
-Version 1.0.0
+Version 1.0.1-SNAPSHOT
 Powered by Spring Boot ${spring-boot.version}
