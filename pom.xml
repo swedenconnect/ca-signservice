@@ -11,7 +11,7 @@
 
   <groupId>se.swedenconnect.ca</groupId>
   <artifactId>signservice-ca</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
 
   <name>Sign service CA</name>
   <description>CA adapted to provide certificates to a high volume sign service with CMC as the only admin API</description>

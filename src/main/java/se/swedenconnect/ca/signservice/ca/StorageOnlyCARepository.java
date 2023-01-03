@@ -151,6 +151,23 @@ public class StorageOnlyCARepository implements CARepository, CRLRevocationDataP
         .build();
     }
 
+    /**
+     * We have a current CRL. Now we must compare the number of revoked CRL:s with the number of listed revoked CRL:s
+     * in the file system. This may have been updated and such update will go unnoticed unless we check it here.
+     */
+    int actualNumberOfRevokedCerts = getRevokedCertificates().size();
+    if (currentCrl.getRevokedCertificates().size() != actualNumberOfRevokedCerts) {
+      log.debug("There is a difference between recorded revoked certificates in the CA repository and the latest CRL "
+        + "- Update metadata to enforce CRL renewal");
+      return CRLMetadata.builder()
+        .crlNumber(crlNumber.add(BigInteger.ONE))
+        .issueTime(Instant.ofEpochMilli(0L))
+        .nextUpdate(Instant.ofEpochMilli(0L))
+        .revokedCertCount(actualNumberOfRevokedCerts)
+        .build();
+
+    }
+
     log.debug("Returning CRL metadata from current CRL");
     return CRLMetadata.builder()
       .crlNumber(crlNumber)
