@@ -1,6 +1,6 @@
-FROM openjdk:11-jre
+FROM openjdk:21-jdk-slim
 
-ADD target/signservice-ca-1.0.4-SNAPSHOT.jar /app.jar
+ADD target/signservice-ca-*.jar /app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 
 # Main web port
