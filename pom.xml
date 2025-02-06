@@ -6,7 +6,7 @@
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>3.4.0</version>
-    <relativePath />
+    <relativePath/>
   </parent>
 
   <groupId>se.swedenconnect.ca</groupId>
@@ -76,7 +76,7 @@
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
-      <version>4.8.6</version>
+      <version>4.9.0</version>
     </dependency>
   </dependencies>
 
