@@ -15,7 +15,6 @@
  */
 package se.swedenconnect.ca.signservice.ca;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
@@ -35,7 +34,7 @@ import se.swedenconnect.ca.engine.ca.repository.CARepository;
 import se.swedenconnect.ca.engine.revocation.CertificateRevocationException;
 import se.swedenconnect.ca.engine.revocation.crl.CRLIssuerModel;
 import se.swedenconnect.ca.service.base.ca.impl.AbstractBasicCA;
-import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.security.credential.container.ManagedPkiCredential;
 
 /**
  * The implementation of a CA instance.
@@ -43,10 +42,10 @@ import se.swedenconnect.security.credential.PkiCredential;
 @Slf4j
 public class SignServiceCA extends AbstractBasicCA {
 
-  public SignServiceCA(final PkiCredential issuerCredential,
+  public SignServiceCA(final ManagedPkiCredential issuerCredential,
       final CARepository caRepository, final CertificateIssuerModel certIssuerModel,
       final CRLIssuerModel crlIssuerModel, final List<String> crlDistributionPoints)
-      throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
+      throws NoSuchAlgorithmException, CertificateEncodingException {
     super(issuerCredential, caRepository, certIssuerModel, crlIssuerModel, crlDistributionPoints);
     log.info("Instantiated Headless CA service instance");
   }

@@ -50,7 +50,7 @@ import se.swedenconnect.ca.service.base.ca.impl.AbstractDefaultCAServices;
 import se.swedenconnect.ca.service.base.configuration.keys.PkiCredentialFactory;
 import se.swedenconnect.ca.service.base.configuration.properties.CAConfigData;
 import se.swedenconnect.ca.service.base.utils.GeneralCAUtils;
-import se.swedenconnect.security.credential.PkiCredential;
+import se.swedenconnect.security.credential.container.ManagedPkiCredential;
 
 /**
  * This class creates CA Service instances for the generic headless CA.
@@ -74,7 +74,7 @@ public class SignServiceCAInstances extends AbstractDefaultCAServices {
   /** {@inheritDoc} */
   @Override
   protected AbstractBasicCA getBasicCaService(final String instance, final String type,
-      final PkiCredential issuerCredential, final CARepository caRepository,
+      final ManagedPkiCredential issuerCredential, final CARepository caRepository,
       final CertificateIssuerModel certIssuerModel, final CRLIssuerModel crlIssuerModel,
       final List<String> crlDistributionPoints)
       throws NoSuchAlgorithmException, IOException, CertificateEncodingException {
@@ -91,14 +91,14 @@ public class SignServiceCAInstances extends AbstractDefaultCAServices {
   }
 
   /** {@inheritDoc} */
-  @Override protected OCSPResponder createOcspResponder(PkiCredential ocspKeySource, OCSPModel ocspModel,
+  @Override protected OCSPResponder createOcspResponder(ManagedPkiCredential ocspKeySource, OCSPModel ocspModel,
     CARepository caRepository) throws NoSuchAlgorithmException {
     return new StorageOnlyOCSPResponder(ocspKeySource, ocspModel, (StorageOnlyCARepository) caRepository);
   }
 
   /** {@inheritDoc} */
   @Override
-  protected X509CertificateHolder generateSelfIssuedCaCert(final PkiCredential caKeySource,
+  protected X509CertificateHolder generateSelfIssuedCaCert(final ManagedPkiCredential caKeySource,
       final CAConfigData caConfigData, final String instance, final String baseUrl)
       throws NoSuchAlgorithmException, CertificateIssuanceException {
     // We implement our own Self issued profile in order to add the SubjectInfoAccess URL to self issued certificates
