@@ -23,9 +23,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import se.swedenconnect.ca.signservice.ca.storage.data.StorageRecord;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Iterator to read certificate records from a storage file.

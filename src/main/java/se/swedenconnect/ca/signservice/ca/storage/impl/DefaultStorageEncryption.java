@@ -40,12 +40,11 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
 import se.swedenconnect.ca.signservice.ca.storage.StorageEncryption;
 import se.swedenconnect.ca.signservice.ca.storage.data.EncryptedData;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Implementation of storage encryption.
@@ -156,7 +155,7 @@ public class DefaultStorageEncryption implements StorageEncryption {
   private byte[] encrypt(final byte[] toBeEncrypted) throws NoSuchAlgorithmException,
       NoSuchPaddingException, InvalidKeySpecException, InvalidKeyException,
       InvalidParameterSpecException, IllegalBlockSizeException, BadPaddingException,
-      JsonProcessingException {
+      JacksonException {
     final Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
     cipher.init(Cipher.ENCRYPT_MODE, this.encryptionKey);
     final AlgorithmParameters params = cipher.getParameters();

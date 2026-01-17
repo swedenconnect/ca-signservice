@@ -44,8 +44,6 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.util.encoders.Base64;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -60,6 +58,8 @@ import se.swedenconnect.ca.signservice.ca.storage.data.RevocationRecord;
 import se.swedenconnect.ca.signservice.ca.storage.data.StorageRecord;
 import se.swedenconnect.ca.signservice.utils.CertNameUtils;
 import se.swedenconnect.ca.service.base.configuration.keys.BasicX509Utils;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * This is the default implementation of a CA repository storage service.
