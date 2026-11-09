@@ -11,7 +11,7 @@
 
   <groupId>se.swedenconnect.ca</groupId>
   <artifactId>ca-signservice</artifactId>
-  <version>2.0.1</version>
+  <version>2.0.2-SNAPSHOT</version>
 
   <name>Sign service CA</name>
   <description>CA adapted to provide certificates to a high volume sign service with CMC as the only admin API</description>
@@ -29,6 +29,21 @@
       <name>maven2</name>
       <url>https://repo1.maven.org/maven2/</url>
     </repository>
+
+    <!--
+      The GitHub Packages Maven registry of the Sweden Connect organization. Later releases of the Sweden Connect
+      CA libraries are published there only. Downloading needs a server with the id github in settings.xml, see
+      documentation/github-packages.md. Maven Central is listed first, so it is asked first for everything else.
+      -->
+    <repository>
+      <id>github</id>
+      <name>Sweden Connect on GitHub Packages</name>
+      <url>https://maven.pkg.github.com/swedenconnect/*</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
   </repositories>
 
   <dependencyManagement>

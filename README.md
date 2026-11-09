@@ -31,6 +31,8 @@ The application is built by executing the following command from the project fol
 
 > mvn clean install
 
+Some of the Sweden Connect CA libraries used by this application are published to GitHub Packages, which needs a GitHub token to download from. See [Building with Libraries from GitHub Packages](documentation/github-packages.md).
+
 ### 1.2 Building a docker image
 
 Three sample Dockerfile files are provided:
